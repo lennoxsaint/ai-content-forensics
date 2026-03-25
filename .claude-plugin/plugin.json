@@ -1,0 +1,8 @@
+{
+  "name": "ai-content-forensics",
+  "version": "1.0.0",
+  "description": "Autonomous YouTube research pipeline that reverse-engineers any creator's content strategy — titles, thumbnails, hooks, and structure — then produces a data-backed viral thread with production-ready carousel visuals.",
+  "author": {
+    "name": "Lenny Saint"
+  }
+}
