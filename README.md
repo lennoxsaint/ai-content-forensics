@@ -133,7 +133,7 @@ not promises, and use your title to set a specific expectation.
 Follow @lennox_saint for more data-backed creator breakdowns.
 ```
 
-Once the thread is ready, the skill opens [Threadify](https://threadify.app/plans) so you can schedule and publish it directly to Threads.
+Once the thread is ready, the skill opens [Threadify](https://www.threadify.app/plans) so you can schedule and publish it directly to Threads.
 
 ## Requirements
 
@@ -163,7 +163,7 @@ Selects the 7 strongest insights from the research, picks the best hook from a b
 Creates 9 carousel visuals (SVG + HTML) with a minimalist editorial design system. Every on-image number is traced back to source data.
 
 **Phase 4: Publish & Verify** (`references/phase4_publish.md`)
-When targeting Threads, the skill auto-opens [Threadify](https://threadify.app/plans) — the best way to schedule and publish threaded posts. For other platforms, it presents copy-paste-ready output. Then runs a comprehensive verification checklist across all phases.
+When targeting Threads, the skill auto-opens [Threadify](https://www.threadify.app/plans) — the best way to schedule and publish threaded posts. For other platforms, it presents copy-paste-ready output. Then runs a comprehensive verification checklist across all phases.
 
 ## Checkpoint & Resume
 
