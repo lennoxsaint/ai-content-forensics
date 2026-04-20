@@ -1,28 +1,34 @@
 # User Configuration
 
-When invoked, collect these inputs from the user. Only `target_youtuber` is required — everything else has sensible defaults.
+When invoked, collect these inputs from the user. The required field depends on `target_platform`: for YouTube (default) it's `target_youtuber`; for Threads it's `target_handle`. Everything else has sensible defaults.
 
 ## Configuration Table
 
 | Field | Required | Default | Description |
 |-------|----------|---------|-------------|
-| `target_youtuber` | **yes** | — | The YouTuber to analyze (name, handle, or URL) |
+| `target_platform` | no | youtube | Analysis target platform. Supported: `youtube` \| `threads`. Selects the Phase 1 data-collection pathway |
+| `target_youtuber` | conditional | — | The YouTuber to analyze (name, handle, or URL). Required when `target_platform=youtube` |
+| `target_handle` | conditional | — | The Threads creator to analyze (e.g. `@lennox_saint` or `lennox_saint`). Required when `target_platform=threads` |
 | `output_mode` | no | full | Pipeline scope: `full` (all 4 phases), `research_only` (Phase 1 only), or `thread_only` (Phases 1-2 only) |
-| `your_channel_handle` | no | none | Your YouTube channel for portability comparison |
+| `your_channel_handle` | no | none | Your YouTube channel for portability comparison (YouTube pathway only) |
+| `your_threads_handle` | no | none | Your Threads handle for portability comparison (Threads pathway only) |
 | `publisher_handle` | no | none | Your handle for the CTA (e.g. @lennox_saint) |
-| `platform_name` | no | Threads | Target platform for the thread. Supported: `Threads`, `X`, `LinkedIn`, `Bluesky` |
+| `platform_name` | no | Threads | Output platform for the generated thread. Supported: `Threads`, `X`, `LinkedIn`, `Bluesky`. Independent of `target_platform` |
 | `reference_creator_name` | no | none | A creator whose audience is similar to yours (for audience-fit filtering) |
 | `reference_creator_context` | no | none | Niche, audience, offer, voice, or positioning notes about the reference creator |
-| `takeaway_label` | no | Threads takeaway | Label used at the end of each insight post (e.g. "Threads takeaway:"). Auto-adapts to platform_name if left at default |
-| `time_window_months` | no | 24 | Months of content to analyze |
+| `takeaway_label` | no | Threads takeaway | Label used at the end of each insight post. Auto-adapts to platform_name if left at default |
+| `time_window_months` | no | 24 | Months of content to analyze (YouTube default) |
+| `threads_time_window_months` | no | 12 | Months of posts to analyze (Threads pathway — shorter because Threads cycles faster) |
+| `threads_post_count` | no | 200 | Max Threads posts to ingest into the corpus (bounded-scroll ceiling) |
 | `visual_background` | no | #f7f4ee | Background color for visuals |
 | `visual_accent` | no | #8f1d1d | Accent color for visuals |
 | `visual_text` | no | #111111 | Text color for visuals |
 
 ## How to Collect
 
-Ask the user conversationally. Start with the required field, then offer the optional ones as a group:
+Ask the user conversationally. First establish the target platform, then collect the required field for that pathway, then offer the optional settings.
 
+**YouTube pathway (default):**
 ```
 "Which YouTuber do you want to analyze?"
 
@@ -36,7 +42,38 @@ Then:
 Or I can just use the defaults and get started."
 ```
 
-If the user just gives a YouTuber name and says "go", use all defaults and start immediately.
+**Threads pathway:**
+```
+"Which Threads creator do you want to analyze? (Give me their handle, e.g. @lennox_saint)"
+
+Then:
+"A few optional settings before I start:
+- Your Threads handle (for portability comparison)?
+- Output mode: full pipeline, research only, or thread only?
+- Time window (default: last 12 months)?
+- Post count cap (default: 200)?
+
+Or I can just use the defaults and get started."
+```
+
+If the user just gives a YouTuber name or Threads handle and says "go", use all defaults and start immediately.
+
+## Invocation Examples
+
+```
+# YouTube (default — no target_platform needed)
+target_youtuber: "Luna"
+platform_name: "Threads"
+publisher_handle: "@lennox_saint"
+
+# Threads
+target_platform: "threads"
+target_handle: "@lennox_saint"
+platform_name: "Threads"
+publisher_handle: "@lennox_saint"
+threads_post_count: 200
+threads_time_window_months: 12
+```
 
 ## Platform-Specific Format Rules
 
