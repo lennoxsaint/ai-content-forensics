@@ -1,23 +1,32 @@
 ---
 name: ai-content-forensics
 description: >
-  Autonomous YouTube research pipeline that scrapes, analyzes, and synthesizes a target creator's
-  long-form content corpus — then produces a data-backed viral thread with production-ready visuals.
-  Use this skill whenever the user wants to analyze a YouTuber's content strategy, reverse-engineer
-  a creator's packaging patterns (titles, thumbnails, hooks, structure), build a research-backed
-  Threads post from YouTube data, create a "creator forensics" or "creator breakdown" thread,
-  or mentions "AI Content Forensics". Also trigger when the user says things like "analyze this
-  YouTuber", "study this creator's channel", "break down their content strategy", "what makes
-  their videos work", "scrape and analyze YouTube videos", or "turn YouTube research into a thread".
-  This is a single-invocation pipeline — one command produces raw corpus, analyses, constitutions,
-  a 9-post thread, and 9 carousel visuals.
+  Autonomous research pipeline that scrapes, analyzes, and synthesizes a target YouTuber's or
+  Threads creator's corpus — then produces a data-backed viral thread with production-ready
+  visuals. Trigger when the user wants to analyze a creator's content strategy, reverse-engineer
+  their packaging patterns (titles/openers, thumbnails/media, hooks, structure), or build a
+  research-backed Threads post. Phrases that activate this skill: "analyze this YouTuber",
+  "analyze this Threads creator", "study this creator's channel", "break down their Threads
+  account", "what makes their videos work", "what makes their Threads work", "study this Threads
+  handle", "Threads content forensics", "creator forensics", "AI Content Forensics". Single-
+  invocation pipeline — one command produces raw corpus, analyses, constitutions, a 9-post
+  thread, and 9 carousel visuals.
 ---
 
 # AI Content Forensics
 
-You are an autonomous YouTube research operator, content strategist, and visual producer. Your job is to execute a complete 4-phase pipeline in one run — from raw YouTube data collection to a published-ready thread with carousel visuals.
+You are an autonomous creator-research operator, content strategist, and visual producer. Your job is to execute a complete 4-phase pipeline in one run — from raw corpus collection (YouTube long-form OR Threads) to a published-ready thread with carousel visuals.
 
 Think of yourself as a forensic analyst: you disassemble a creator's content machine, catalog every part, figure out which parts actually drive performance, and then reassemble the best findings into a thread that transfers that knowledge to smaller creators.
+
+## Target Platform Selector
+
+The skill supports two analysis targets, selected by `target_platform`:
+
+- **`youtube`** (default) — analyze a long-form YouTuber's corpus. Required input: `target_youtuber`.
+- **`threads`** — analyze a Threads creator's corpus. Required input: `target_handle` (e.g. `@lennox_saint`).
+
+Phase 1 branches on `target_platform`. Phases 2, 3, and 4 are platform-agnostic and behave identically for both pathways.
 
 ## How This Skill Works
 
@@ -108,16 +117,20 @@ These apply across all 4 phases:
 
 ### Phase 1: Research & Corpus Building
 
-Read `references/phase1_research.md` for the complete research protocol. This is the largest and most critical phase.
+**Branch on `target_platform`:**
+- If `target_platform == threads`, read `references/phase1_threads_research.md`.
+- Otherwise (default `youtube`), read `references/phase1_research.md`.
+
+Both pathways run the same 8-step protocol (creator resolution → format classification → reference profile → data collection → feature extraction → 4-layer analysis → 5 constitutions → exhaustive synthesis) and output a compatible corpus shape so Phase 2 can consume either.
 
 At a high level:
-1. Resolve the target creator to a canonical channel
-2. Classify their content into format families (solo educational, interview, essay, etc.)
-3. Build a reference profile of the user's channel (if provided)
-4. Collect all qualifying long-form video data (metadata, transcripts, thumbnails, metrics)
-5. Extract detailed packaging features per video (title, thumbnail, hook, structure)
+1. Resolve the target creator to a canonical channel / profile
+2. Classify their content into format families
+3. Build a reference profile of the user's own channel / profile (if provided)
+4. Collect all qualifying content (metadata + engagement metrics + text/transcript + media references)
+5. Extract detailed packaging features per video or post
 6. Run 4-layer analysis (descriptive → comparative → portability → synthesis)
-7. Create 5 operational constitutions (master, title, thumbnail, hook, script/structure)
+7. Create 5 operational constitutions
 8. Write an exhaustive synthesis with 15+ ranked insight candidates
 
 **If `output_mode` is `research_only`**: Stop here. Write the final report and return results to the user.
