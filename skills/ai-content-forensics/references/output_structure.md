@@ -1,12 +1,13 @@
 # Output Folder Structure
 
-All output goes into a single folder named after the target creator:
+All output goes into a single folder named after the target creator. The folder name depends on `target_platform`:
 
 ```
-research/youtube-packaging/{creator-slug}/
+research/youtube-packaging/{creator-slug}/        # when target_platform=youtube (default)
+research/threads-packaging/{creator-slug}/        # when target_platform=threads
 ```
 
-Where `{creator-slug}` is a lowercase, hyphenated version of the creator's name (e.g., `ali-abdaal`, `alex-hormozi`).
+Where `{creator-slug}` is a lowercase, hyphenated version of the creator's name or handle (e.g., `ali-abdaal`, `alex-hormozi`, `lennox-saint`). Strip the leading `@` from Threads handles before slugging.
 
 ## Complete Layout
 
@@ -95,13 +96,45 @@ research/youtube-packaging/{creator-slug}/
 
 ## Conditional Files
 
-Several files are only created when the user provides their own YouTube channel handle (`your_channel_handle`):
+Several files are only created when the user provides their own reference handle:
 
-- `01_reference_channel_profile.md`
+- `01_reference_channel_profile.md` — YouTube: when `your_channel_handle` provided. Threads: when `your_threads_handle` provided.
 - `08_portability_matrix.csv` / `.json`
 - `analyses/portability.md`
 
-If no reference channel is provided, skip these entirely. Do not create empty placeholder files.
+If no reference is provided, skip these entirely. Do not create empty placeholder files.
+
+## Threads Pathway Specifics
+
+When `target_platform=threads`, the file numbering stays identical but the content is Threads-native:
+
+- `02_target_creator_profile.md` — profile classification per Threads axes (post format mix, media profile, origination, intent, positioning — see `phase1_threads_research.md` Step 2).
+- `04_video_index.csv` / `.json` → rename conceptually to "post index" but keep file names the same for downstream-tool compatibility. Columns swap: video URL → post permalink, video ID → post ID, duration → word count, etc. Per-field mapping is documented in `phase1_threads_research.md` Step 5 "Corpus Schema Parity".
+- `06_packaging_features.csv` / `.json` → same schema shape, Threads-specific columns (post_type, thread_position, cta_presence, question_presence, trigger_density, has_media).
+
+### Excluded columns (not available for Threads)
+
+These YouTube-specific columns are omitted from Threads corpus files — do not emit empty columns:
+- Thumbnail visual analysis (face presence, contrast, focal clarity, visual metaphor)
+- Transcript (replaced by full post `text`)
+- Chapter timestamps
+- Duration in seconds (replaced by `word_count`)
+
+### Missing metric: `saves`
+
+The Threads API does not expose a `saves` metric. Do not fabricate one. If any downstream code references YouTube "saves", leave it null for Threads runs.
+
+### Constitutions folder (Threads)
+
+The 5-file structure stays the same, but file names adapt to the Threads equivalents from `phase1_threads_research.md` Step 7:
+
+- `00_master_packaging_constitution.md` (Threads master — same shape, Threads-native rules)
+- `01_title_constitution.md` → populated as the Opener constitution (file name stays for compatibility; content governs the first 140 chars of Threads posts)
+- `02_thumbnail_constitution.md` → populated as the Media-use constitution (when to attach image/video/carousel vs text-only)
+- `03_hook_constitution.md` → populated as the first-line / hook-opener constitution
+- `04_script_and_structure_constitution.md` → populated as the Post-structure + CTA-and-engagement constitution (combines what YouTube split across two files)
+
+File names intentionally remain stable so downstream consumers (Phase 2 / Phase 3) read the same paths regardless of target platform.
 
 ## Output Mode Variations
 
