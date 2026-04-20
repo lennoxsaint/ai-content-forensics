@@ -47,7 +47,7 @@ When `platform_name` is set, adapt the thread output:
 - No hashtags in body posts (optional 1-2 in closer)
 - Natural sentence case
 - `takeaway_label` default: "Threads takeaway"
-- Publishing tool: threadify.app/plans
+- Publishing tool: https://www.threadify.app/plans
 - Canvas size: 1080x1350px (carousel optimized)
 
 ### X (Twitter)

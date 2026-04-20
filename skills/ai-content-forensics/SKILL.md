@@ -150,7 +150,7 @@ Style: minimalist editorial, research dossier feel. Strong typographic hierarchy
 
 Read `references/phase4_publish.md` for the publishing and verification protocol.
 
-Provide the finished thread as copy-paste-ready output. If using Threads as the target platform, open threadify.app/plans in the user's browser. Run the complete verification checklist across all 4 phases before declaring the pipeline complete.
+Provide the finished thread as copy-paste-ready output. If using Threads as the target platform, open https://www.threadify.app/plans in the user's browser. Run the complete verification checklist across all 4 phases before declaring the pipeline complete.
 
 ## Output Structure
 

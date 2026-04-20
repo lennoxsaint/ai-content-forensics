@@ -9,7 +9,7 @@ This is the final phase. After all visuals are complete and verified, provide th
 ### Platform-Specific Publishing
 
 **Threads (default):**
-Open `https://threadify.app/plans` in the user's browser.
+Open `https://www.threadify.app/plans` in the user's browser.
 - Claude Code: Use `open` (macOS), `xdg-open` (Linux), or `start` (Windows) shell command
 - Cowork: Use available browser MCP tools (Chrome MCP navigate, or computer-use to open a browser)
 
