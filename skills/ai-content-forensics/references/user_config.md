@@ -7,8 +7,12 @@ When invoked, collect these inputs from the user. The required field depends on 
 | Field | Required | Default | Description |
 |-------|----------|---------|-------------|
 | `target_platform` | no | youtube | Analysis target platform. Supported: `youtube` \| `threads`. Selects the Phase 1 data-collection pathway |
+| `input_mode` | no | live_profile | Threads-only input mode. Supported: `local_corpus` \| `live_profile`. Use `local_corpus` when a Threadify vault/export already exists on disk |
 | `target_youtuber` | conditional | — | The YouTuber to analyze (name, handle, or URL). Required when `target_platform=youtube` |
-| `target_handle` | conditional | — | The Threads creator to analyze (e.g. `@lennox_saint` or `lennox_saint`). Required when `target_platform=threads` |
+| `target_handle` | conditional | — | The Threads creator to analyze (e.g. `@lennox_saint` or `lennox_saint`). Required when `target_platform=threads` and `input_mode=live_profile` |
+| `corpus_files` | conditional | none | One or more local corpus files. Required when `target_platform=threads` and `input_mode=local_corpus` |
+| `expected_corpus_count` | no | none | Optional hard gate for local corpus runs. If provided, stop when the verified deduped count differs |
+| `output_root` | no | derived from target | Optional absolute output directory. Use this for project-tied reruns |
 | `output_mode` | no | full | Pipeline scope: `full` (all 4 phases), `research_only` (Phase 1 only), or `thread_only` (Phases 1-2 only) |
 | `your_channel_handle` | no | none | Your YouTube channel for portability comparison (YouTube pathway only) |
 | `your_threads_handle` | no | none | Your Threads handle for portability comparison (Threads pathway only) |
@@ -56,6 +60,16 @@ Then:
 Or I can just use the defaults and get started."
 ```
 
+**Threads local corpus pathway (Codex preferred when a vault/export exists):**
+```
+"Which local corpus file should I analyze?"
+
+Then:
+"Do you want a hard expected-count gate, and where should I write the output?"
+```
+
+If the user supplies the corpus path, expected count, and output root in the prompt, do not ask again. Run the local corpus gate first.
+
 If the user just gives a YouTuber name or Threads handle and says "go", use all defaults and start immediately.
 
 ## Invocation Examples
@@ -73,6 +87,15 @@ platform_name: "Threads"
 publisher_handle: "@lennox_saint"
 threads_post_count: 200
 threads_time_window_months: 12
+
+# Threads local corpus
+target_platform: "threads"
+input_mode: "local_corpus"
+corpus_files:
+  - "/Users/lennoxsaint/swipefile/vault-extract/THREADIFY VAULT EXTRACT 060426.jsonl"
+expected_corpus_count: 1996
+output_root: "/Users/lennoxsaint/content-pipeline/2026-04-21-threads-growth-is-a-lie/research/threads-packaging/threadify-vault-1996-codex"
+output_mode: "full"
 ```
 
 ## Platform-Specific Format Rules

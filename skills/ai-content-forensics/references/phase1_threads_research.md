@@ -8,16 +8,17 @@ Adapt to the actual target creator. Do not force single-post patterns onto a thr
 
 ## Rules
 
-1. Chrome MCP first (operable Day 1), Threads API second (gated on Meta app review), no third fallback
-2. Never guess ambiguous data — verify or ask one precise question
-3. Keep raw evidence separate from interpretation
-4. Preserve post text verbatim (including punctuation, line breaks, emoji)
-5. Save media URLs as references (download is optional)
-6. Log every fallback path used in `logs/fallback_log.md`
-7. Every constitution rule must trace to corpus evidence
-8. Exclude pure reposts with no added commentary from pattern analysis (but keep them in corpus for reply-rate analysis)
-9. Mixed-format creators: segment corpus by format family before analysis
-10. If a metric is unavailable for a post, log it — do not fabricate
+1. If `input_mode=local_corpus`, use the local corpus pathway first and do not scrape live Threads unless the user explicitly promotes a recovery/export step
+2. If `input_mode=live_profile`, Chrome MCP/Computer Use first (operable Day 1), Threads API second (gated on Meta app review), no silent third fallback
+3. Never guess ambiguous data — verify or ask one precise question
+4. Keep raw evidence separate from interpretation
+5. Preserve post text verbatim (including punctuation, line breaks, emoji)
+6. Save media URLs as references (download is optional)
+7. Log every fallback path used in `logs/fallback_log.md`
+8. Every constitution rule must trace to corpus evidence
+9. Exclude pure reposts with no added commentary from pattern analysis (but keep them in corpus for reply-rate analysis)
+10. Mixed-format creators: segment corpus by format family before analysis
+11. If a metric is unavailable for a post, log it — do not fabricate
 
 ---
 
@@ -69,10 +70,29 @@ If `your_threads_handle` is empty, skip entirely and proceed to data collection.
 
 ## Step 4: Data Collection
 
+### Local Corpus Mode (Codex Preferred)
+
+If `input_mode=local_corpus`, read `codex_threads_local_corpus.md` and run the deterministic local corpus workflow before considering any live browser/API collection.
+
+Required behavior:
+- Ingest every supplied `corpus_files` path.
+- Normalize every candidate post into the shared Threads corpus schema.
+- Dedupe by URL/source ID first, then by normalized author + body hash.
+- If `expected_corpus_count` is provided and the verified unique count differs, stop before making findings and write a discrepancy report.
+- Use browser automation only for the final Threadify draft insertion step, not for analysis.
+
+For the Threadify vault rerun, the preferred exact source is:
+
+```
+/Users/lennoxsaint/swipefile/vault-extract/THREADIFY VAULT EXTRACT 060426.jsonl
+```
+
+This file contains one malformed multi-line JSON record; the local corpus runner repairs it by splitting records on `{"source_id"` boundaries and escaping embedded raw newlines before JSON parsing.
+
 ### Environment Check
 
 First, check the local environment:
-- Is Chrome MCP paired to `MacBook-Pro.local` with device ID `19d50471-e353-4b74-b330-06ab6bdb76e7`? (Tier 1 prerequisite.)
+- Is Chrome MCP paired to `MacBook-Pro-2.local` with device ID `19d50471-e353-4b74-b330-06ab6bdb76e7`? (Tier 1 prerequisite.)
 - Does `~/.config/threads/token.json` exist? (Tier 2 readiness probe.)
 - Is there a prior-run checkpoint at `logs/checkpoint.json`? Resume if present and current.
 
@@ -103,8 +123,8 @@ Follows the pattern proven in `~/.claude/skills/ghostwrite_thread/SKILL.md`.
 
 **Pairing lock (mandatory before any Chrome MCP call):**
 1. Call `mcp__claude-in-chrome__tabs_context_mcp({createIfEmpty: true})`.
-2. Verify `hostname == MacBook-Pro.local`.
-3. Read `~/.claude.json` — require `chromeExtension.pairedDeviceId == 19d50471-e353-4b74-b330-06ab6bdb76e7` and `chromeExtension.pairedDeviceName == MacBook-Pro Chrome`.
+2. Verify `hostname == MacBook-Pro-2.local`.
+3. Read `~/.claude.json` — require `chromeExtension.pairedDeviceId == 19d50471-e353-4b74-b330-06ab6bdb76e7` and `chromeExtension.pairedDeviceName == MacBook-Pro-2 Chrome`.
 4. If extension not connected or device mismatch, STOP and report the exact CLAUDE.md error message. Do NOT proceed.
 
 **Navigation + login-wall:**

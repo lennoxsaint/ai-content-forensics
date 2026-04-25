@@ -119,6 +119,46 @@ For each qualifying video, collect:
 
 ---
 
+## Step 4.5: API Rate-Limit Aware Collection (mandatory for YouTube)
+
+The yt-dlp invocation must use the canonical rate-limit-safe flag set documented in `SKILL.md` "API Rate-Limit Strategy". For YouTube collections > 300 videos OR full-window 24-month runs, this is non-negotiable — failing to use it will silently rate-limit the run after ~300 videos and most subsequent collections will be empty stubs.
+
+Wrapped invocation:
+
+```bash
+bash scripts/youtube_collect.sh \
+  --channel-id UCxxxxxxxxxxxxxxxxxxxxxx \
+  --window-start 20240425 \
+  --output-root "$PWD"
+```
+
+Or the raw form (see `SKILL.md` for the full template):
+
+```bash
+yt-dlp \
+  --skip-download --write-info-json --write-thumbnail \
+  --write-auto-subs --sub-lang "en.*,en" --sub-format "vtt/best" \
+  --convert-thumbnails jpg \
+  --no-warnings --ignore-errors \
+  --download-archive "raw/{creator_slug}_done_archive.txt" \
+  --break-match-filters "upload_date >= 20240425" \
+  --sleep-requests 4 \
+  --sleep-interval 2 --max-sleep-interval 8 \
+  --retries 3 --extractor-retries 3 \
+  -o "raw/per_video_{creator_slug}/%(id)s.%(ext)s" \
+  "https://www.youtube.com/channel/{CHANNEL_ID}/videos"
+```
+
+Resumability: the `--download-archive` flag records every successfully-completed video ID. Subsequent runs skip them automatically — the entire collection is idempotent.
+
+Detection: monitor `logs/{creator_slug}_collection.log` for the string `"rate-limited by YouTube"`. If it appears more than ~5 times in a row, the skill MUST either:
+- kill the current process, sleep 60 minutes, and resume — OR
+- accept the longer ETA if `--sleep-requests 4` is already in effect.
+
+Watcher: launch `scripts/watcher.sh` to fire `scripts/auto_refresh.sh` automatically when the FINISHED marker appears in the collection log. Both ship with the skill.
+
+---
+
 ## Step 5: Feature Extraction
 
 For every qualifying video, extract detailed packaging features across these categories:
@@ -189,6 +229,45 @@ Enable per format family:
 
 ---
 
+## Step 5.5: Thumbnail Vision Analysis (mandatory if `GOOGLE_API_KEY` is set)
+
+Run `scripts/vision_analyze.py` over every collected thumbnail to produce structured per-thumbnail vision JSON. Uses Gemini Vision (`gemini-2.5-pro` with `gemini-2.5-flash` fallback) via `GOOGLE_API_KEY`. Idempotent — skips thumbnails that already have `vision.json`.
+
+Per-thumbnail output schema (`normalized/videos/{creator_slug}/{id}/vision.json`):
+
+```json
+{
+  "video_id": "...",
+  "title": "...",
+  "model": "gemini-2.5-pro",
+  "face_count": 0,
+  "host_face_present": false,
+  "guest_face_present": false,
+  "faces_total_emotion": "neutral|surprised|angry|amused|stern|smiling|intense|sad|other",
+  "expression_intensity": "high|medium|low",
+  "text_overlay_present": false,
+  "text_overlay_words": [],
+  "text_overlay_word_count": 0,
+  "text_overlay_dominant_color": "#hex",
+  "background_color_dominant": "#hex",
+  "background_simplicity": "minimal|busy",
+  "focal_point_clarity": "high|medium|low",
+  "primary_concept_object": "free-text short label",
+  "modern_wisdom_brand_mark_visible": false,
+  "single_dominant_subject": false,
+  "mobile_legibility_220x125": "high|medium|low",
+  "interpretation_notes": "1-3 sentences"
+}
+```
+
+Aggregated to `analyses/vision_aggregate.{csv,json}`. The thumbnail constitution in `constitutions/02_thumbnail_constitution.md` MUST cite this aggregate, not be inferential.
+
+If `GOOGLE_API_KEY` is not set, log this in `logs/fallback_log.md` and proceed with text-feature inferential analysis only — but mark every thumbnail rule confidence as MEDIUM at most, and note this in the constitution itself.
+
+Failures are logged to `logs/vision_failures.json` with `{video_id, error}` per row. Partial results still aggregate.
+
+---
+
 ## Step 6: Analysis (4 Layers)
 
 ### Layer 1 — Descriptive
@@ -197,23 +276,27 @@ What patterns repeat in titles, thumbnails, hooks, structures? If multiple forma
 ### Layer 2 — Comparative
 Compare top-performing vs bottom-performing videos using available metrics. Normalize by age where possible. Identify patterns disproportionately present in top performers. State correlation, not causality.
 
-### Layer 3 — Portability (ONLY if `your_channel_handle` provided)
+### Layer 3 — Portability (default: ON; skip only if explicitly opted out)
 
-For each discovered pattern, score:
+The cross-reference layer is the highest-leverage output of this skill. It is run by default — the only way to skip it is for the operator to explicitly pass `your_channel_handle: ""` (empty string).
+
+For each discovered pattern, score and record (must include the `corpus_citation` field — never write portability claims without a row id):
+
 - `evidence_strength` (strong/moderate/weak)
-- `prevalence_in_corpus` (percentage of videos)
+- `prevalence_in_corpus` (percentage of videos in target corpus)
 - `effect_size_if_measurable`
 - `portability_to_user_channel` (high/medium/low)
 - `dependence_on`: guest fame, creator brand equity, production scale, timing/news cycle
 - `risk_of_false_transfer`
 - `recommendation`: adopt / test / ignore
+- `corpus_citation`: list of `06_packaging_features.json` row ids that ground this pattern
 
 Create three buckets:
-- **A. Portable now** for user's channel
-- **B. Conditional** — worth testing
-- **C. Creator-specific artifacts** — do not blindly copy
+- **A. Portable now** for user's channel — adopt with light adaptation
+- **B. Conditional** — worth testing in 1-2 production videos before committing
+- **C. Creator-specific artifacts** — do not blindly copy; these depend on the source creator's specific equity
 
-If no reference channel provided, skip Layer 3 entirely.
+The portability layer feeds the thread takeaway lines (Phase 2) and the cross-reference notes inside each constitution (Phase 1 Step 7). Without it, the thread is descriptive rather than prescriptive for the operator.
 
 ### Layer 4 — Synthesis
 Convert strongest findings into operational constitutions. Prefer actionable rules over vague commentary.

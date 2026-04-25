@@ -9,9 +9,14 @@ This is the final phase. After all visuals are complete and verified, provide th
 ### Platform-Specific Publishing
 
 **Threads (default):**
-Open `https://www.threadify.app/plans` in the user's browser.
+Open `https://www.threadify.app/plans` in the user's browser only when the user has explicitly asked for Threadify insertion.
 - Claude Code: Use `open` (macOS), `xdg-open` (Linux), or `start` (Windows) shell command
-- Cowork: Use available browser MCP tools (Chrome MCP navigate, or computer-use to open a browser)
+- Codex/Cowork: Use available browser MCP tools or Computer Use to open a browser
+
+Draft safety:
+- Insert or stage the thread as a draft/template only.
+- Do not publish, schedule, overwrite an existing live post, send email, or take any irreversible action.
+- If the UI has no safe draft state, stop after placing the text in the editor and ask the user to finish manually.
 
 **X, LinkedIn, Bluesky:**
 Do not auto-open a publishing tool. Instead, present the thread in copy-paste-ready format and let the user publish manually or with their preferred tool.
@@ -59,6 +64,7 @@ Before declaring the pipeline complete, verify everything across all 4 phases:
 
 ### Phase 4 Verification
 - [ ] Publishing tool opened (Threads) or copy-paste output presented (other platforms)
+- [ ] Threads insertion is draft-only unless the user explicitly promoted publishing
 - [ ] All files written to correct paths in output structure
 - [ ] Run report (`00_run_report.md`) complete
 - [ ] All logs complete

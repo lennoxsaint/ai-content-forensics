@@ -46,6 +46,20 @@ Before generating any visual:
 
 This step is non-negotiable. Every number on every slide must be traceable.
 
+## Data Binding (mandatory — `auto_update_artifacts.py` is the only writer)
+
+Every on-image number is derived from `analyses/_stats.json` or a row in `06_packaging_features.json` via `scripts/auto_update_artifacts.py`. Hand-edits to `visuals/_assets.json` are forbidden — re-run the auto-updater to regenerate. Specifically:
+
+- **Cover scope_table values**: from run-report counts (`00_run_report.md` or live filesystem count of `normalized/videos/{creator_slug}/`).
+- **split_stat values**: from `analyses/_stats.json` → `creators.{creator_slug}.per_family.*` and top/bottom decile fields.
+- **bar_chart values**: from distributions or counters in `analyses/_stats.json`.
+- **template_card examples**: verbatim title strings from `06_packaging_features.json` rows that match the formula.
+- **recap items**: derived from the 7 selected insights' takeaway lines, with numbers re-derived from stats.
+
+The auto-update script keeps `thread/final_thread.md`, `visuals/_assets.json`, and `publish/copy_paste.md` in lockstep with `analyses/_stats.json`. Phase 3 author calls auto-update first, THEN renders SVG/HTML/PNG.
+
+When a long-running collection completes, `scripts/auto_refresh.sh` (fired by `scripts/watcher.sh`) calls auto-update automatically. The operator does not need to manually re-derive numbers.
+
 ---
 
 ## Asset Archetypes
@@ -148,6 +162,9 @@ For each on-image number across all 9 assets:
 - The source file path
 - The exact location/context in the source file
 - Confirmation of accuracy
+
+### `03_render_fallbacks.md`
+Document which PNG render path was used (rsvg-convert, headless browser, or SVG-only). See the dedicated reference `references/03_render_fallbacks.md` for the priority chain and detection logic.
 
 ---
 

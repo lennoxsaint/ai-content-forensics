@@ -9,6 +9,8 @@ research/threads-packaging/{creator-slug}/        # when target_platform=threads
 
 Where `{creator-slug}` is a lowercase, hyphenated version of the creator's name or handle (e.g., `ali-abdaal`, `alex-hormozi`, `lennox-saint`). Strip the leading `@` from Threads handles before slugging.
 
+If `output_root` is provided, use that absolute path exactly and keep the layout below inside it.
+
 ## Complete Layout
 
 ```
@@ -111,6 +113,16 @@ When `target_platform=threads`, the file numbering stays identical but the conte
 - `02_target_creator_profile.md` — profile classification per Threads axes (post format mix, media profile, origination, intent, positioning — see `phase1_threads_research.md` Step 2).
 - `04_video_index.csv` / `.json` → rename conceptually to "post index" but keep file names the same for downstream-tool compatibility. Columns swap: video URL → post permalink, video ID → post ID, duration → word count, etc. Per-field mapping is documented in `phase1_threads_research.md` Step 5 "Corpus Schema Parity".
 - `06_packaging_features.csv` / `.json` → same schema shape, Threads-specific columns (post_type, thread_position, cta_presence, question_presence, trigger_density, has_media).
+
+### Local Corpus Mode Additions
+
+When `input_mode=local_corpus`, also write:
+
+- `raw/corpus_source_receipt.json` — source paths, parse status, raw candidate count, deduped count, expected-count gate result.
+- `normalized/threads_corpus.json` — full normalized corpus in one file.
+- `logs/discrepancy_log.md` — required when the expected-count gate fails; otherwise note that the gate passed.
+
+Posts with missing or zero like counts remain in the normalized corpus, but comparative performance claims must use the metric-valid subset and report that subset size.
 
 ### Excluded columns (not available for Threads)
 
