@@ -59,11 +59,13 @@ except ImportError as e:
     sys.exit(2)
 
 
+# Use unique sentinels (not {placeholders}) — str.format() would otherwise treat the
+# literal { in the schema example as a placeholder and KeyError on it.
 PROMPT_TEMPLATE = """You are a YouTube thumbnail forensics analyst. Analyze the attached thumbnail image and return a single JSON object matching this schema EXACTLY (no preamble, no markdown):
 
 {
   "face_count": <integer 0-N>,
-  "host_face_present": <bool — Chris Williamson is the host; if creator is not Chris, mark false>,
+  "host_face_present": <bool — host of the channel; if not visible, mark false>,
   "guest_face_present": <bool — interview guest visible alongside or instead of host>,
   "faces_total_emotion": "<one of: neutral, surprised, angry, amused, stern, smiling, intense, sad, other>",
   "expression_intensity": "<high | medium | low>",
@@ -81,14 +83,21 @@ PROMPT_TEMPLATE = """You are a YouTube thumbnail forensics analyst. Analyze the 
   "interpretation_notes": "<1-3 sentences plain text describing the thumbnail's packaging strategy in this single image>"
 }
 
-Context: video title is "{title}". Creator is "{creator}". Return only the JSON object."""
+Context: video title is "__TITLE__". Creator is "__CREATOR__". Return only the JSON object."""
+
+
+def render_prompt(title: str, creator: str) -> str:
+    """Render without str.format() so literal { } in the JSON schema example survive."""
+    return (PROMPT_TEMPLATE
+            .replace("__TITLE__", (title or "").replace('"', r'\"'))
+            .replace("__CREATOR__", (creator or "").replace('"', r'\"')))
 
 
 def analyze_one(client, image_path: Path, title: str, creator: str, model_name: str):
     image_bytes = image_path.read_bytes()
     contents = [
         types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
-        types.Part.from_text(text=PROMPT_TEMPLATE.format(title=title, creator=creator)),
+        types.Part.from_text(text=render_prompt(title, creator)),
     ]
     resp = client.models.generate_content(
         model=model_name,
