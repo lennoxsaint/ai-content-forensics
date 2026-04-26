@@ -126,11 +126,20 @@ def main():
     # Use the strongest available vision model. gemini-2.5-pro is generally available;
     # the system memo says image GENERATION uses gemini-3.1-flash-image-preview but for
     # vision UNDERSTANDING we use a different model.
-    model_candidates = [
-        "gemini-2.5-pro",
-        "gemini-2.5-flash",
-        "gemini-1.5-pro",
-    ]
+    # gemini-2.5-flash-lite is the sweet spot for thumbnail vision — ~5x faster than
+    # 2.5-pro, full structured-JSON support, and it still recognizes named guests
+    # (verified on Chris Williamson interview thumbnails). The 3.x flash models are
+    # similar speed but lose person recognition, so we prefer 2.5-flash-lite.
+    # Override per-run with FORENSICS_VISION_MODEL=<model_name> if needed.
+    env_override = os.environ.get("FORENSICS_VISION_MODEL")
+    model_candidates = (
+        [env_override] if env_override else [
+            "gemini-2.5-flash-lite",
+            "gemini-2.5-flash",
+            "gemini-2.5-pro",
+            "gemini-1.5-pro",
+        ]
+    )
     client = genai.Client(api_key=api_key)
     model_name = None
     for cand in model_candidates:
